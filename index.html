@@ -1,4 +1,8 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>AI Valuation-Off</title>
 <meta name="description" content="Value OpenAI and Anthropic yourself: move the assumptions and see what each company is worth against the prices investors pay.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -112,6 +116,8 @@ footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); max-width: 76
 .mini { display: none; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; justify-content: space-between; gap: 10px; flex-wrap: wrap;
   background: var(--surface); border-bottom: 1px solid var(--line); padding: 8px 16px; font-size: 13px; margin-inline: -16px; }
 </style>
+</head>
+<body style="margin:0">
 <div class="wrap">
   <header class="brief">
     <span class="eyebrow">Pre-IPO valuation-off · data as of October 2026</span>
@@ -134,6 +140,7 @@ footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); max-width: 76
         <li><b>Value ÷ price:</b> above 1× the company looks cheap against this model; below 1× it looks expensive.</li>
       </ul>
     </details>
+    <p class="notice"><a href="valuation_off.html" style="color:var(--accent);font-weight:600">Read the full notebook →</a> every number, source and assumption behind this page.</p>
     <p class="notice">A learning model, not investment advice. Revenue is on a comparable "net" basis (Anthropic's reported figures cut by 10%). Values are for the business; cash in the bank is only added if you switch it on.</p>
   </header>
 
@@ -192,6 +199,7 @@ footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); max-width: 76
 
   <footer>
     <p>Built from my notebook <i>AI Valuation-Off</i> (Sections 5–10). Sources are graded A (the company), B (FT, Reuters, Bloomberg, WSJ, CNBC, The Information, Axios, NYT) or C (my own assumption). Revenue start points: 2026 revenue booked so far plus the latest run-rate for the rest of the year. Tax 21%, with past losses offsetting later profit. Valued as of 13 October 2026.</p>
+    <p><a href="valuation_off.html" style="color:var(--accent)">Open the full notebook (sources, method and appendix)</a></p>
   </footer>
 </div>
 <script>
@@ -456,4 +464,5 @@ $("presetBuilt").addEventListener("click", () => { P = defaultsFor("asbuilt"); s
 render(); setPreset("fixed");
 </script>
 
-</body></html>
+</body>
+</html>
