@@ -1,0 +1,459 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>AI Valuation-Off</title>
+<meta name="description" content="Value OpenAI and Anthropic yourself: move the assumptions and see what each company is worth against the prices investors pay.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: short briefing on top, then a two-column workbench — controls on the left, live results (sticky) on the right; stacks on phones. */
+:root {
+  --bg: #f3f5f8; --surface: #ffffff; --ink: #16202c; --muted: #5a6676; --line: #d8dee6; --soft: #e9edf2;
+  --oa: #0d7a6a; --an: #b0532c; --good: #2a7f47; --bad: #b4372f; --accent: #2c4a7a;
+  --f-display: "Newsreader", Georgia, "Times New Roman", serif;
+  --f-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f141b; --surface: #171e28; --ink: #e5eaf0; --muted: #97a2b0; --line: #2a3441; --soft: #1f2833;
+  --oa: #3cc0a8; --an: #e38b5f; --good: #5cc07f; --bad: #ec7a70; --accent: #8fb0e6; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #171e28; --ink: #e5eaf0; --muted: #97a2b0; --line: #2a3441; --soft: #1f2833;
+  --oa: #3cc0a8; --an: #e38b5f; --good: #5cc07f; --bad: #ec7a70; --accent: #8fb0e6; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; }
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.01em; }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; }
+p { margin: 0; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.oa { color: var(--oa); } .an { color: var(--an); }
+
+header.brief { display: grid; gap: 14px; max-width: 760px; margin-bottom: 22px; }
+header.brief .lede { font-size: 17px; }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 6px 0 4px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 13.5px; min-width: 0; }
+.step b { display: block; font-size: 13px; }
+details.more { font-size: 14px; }
+details.more summary { cursor: pointer; color: var(--accent); font-weight: 600; }
+details.more ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.notice { font-size: 13px; color: var(--muted); }
+
+.bench { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 22px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 18px; min-width: 0; }
+.results { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 16px; min-width: 0; }
+fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; min-width: 0; }
+legend { padding: 0; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+legend .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.group-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.group-head h3 { font-size: 16px; }
+.ctl { display: grid; gap: 2px; }
+.ctl .top { display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px; }
+.ctl .top output { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 13px; }
+.ctl .hint { font-size: 12px; color: var(--muted); }
+input[type=range] { width: 100%; accent-color: var(--accent); margin: 2px 0; }
+.oa-ctl input[type=range] { accent-color: var(--oa); }
+.an-ctl input[type=range] { accent-color: var(--an); }
+.probs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; }
+.toggle { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: start; font-size: 13.5px; }
+.toggle input { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--accent); }
+.toggle .hint { grid-column: 2; font-size: 12px; color: var(--muted); }
+hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: inherit; font-size: 13.5px; font-weight: 600; padding: 7px 12px; border-radius: 7px; border: 1px solid var(--line); background: var(--soft); color: var(--ink); cursor: pointer; }
+button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.verdict { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 12px 14px; font-size: 15px; }
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+.card .name { font-family: var(--f-display); font-size: 20px; font-weight: 600; }
+.big { font-family: var(--f-mono); font-size: 30px; font-weight: 500; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.ratios { display: grid; gap: 6px; }
+.ratio { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; font-size: 13.5px; }
+.ratio .bar { grid-column: 1 / -1; height: 6px; background: var(--soft); border-radius: 3px; overflow: hidden; position: relative; }
+.ratio .bar span { position: absolute; inset: 0 auto 0 0; border-radius: 3px; }
+.ratio .bar i { position: absolute; top: -2px; bottom: -2px; left: 50%; width: 2px; background: var(--muted); }
+.pill { font-family: var(--f-mono); font-size: 12.5px; padding: 1px 7px; border-radius: 99px; border: 1px solid currentColor; white-space: nowrap; }
+.pill.cheap { color: var(--good); } .pill.dear { color: var(--bad); }
+.split { font-size: 13px; color: var(--muted); }
+
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px; min-width: 0; }
+.chart { width: 100%; overflow-x: auto; }
+.chart svg { display: block; width: 100%; min-width: 520px; height: auto; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; min-width: 520px; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2) { text-align: left; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 600; }
+td.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+tr.sep td { border-top: 2px solid var(--line); }
+.neg { color: var(--bad); }
+footer { margin-top: 28px; font-size: 12.5px; color: var(--muted); max-width: 760px; display: grid; gap: 6px; }
+
+@media (max-width: 980px) {
+  .bench { grid-template-columns: minmax(0, 1fr); }
+  .results { position: static; }
+  .mini { display: flex; }
+  .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .cards { grid-template-columns: minmax(0, 1fr); }
+  .wrap { padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: no-preference) { .ratio .bar span { transition: width .25s ease; } }
+</style>
+<style>
+.mini { display: none; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  background: var(--surface); border-bottom: 1px solid var(--line); padding: 8px 16px; font-size: 13px; margin-inline: -16px; }
+</style>
+<div class="wrap">
+  <header class="brief">
+    <span class="eyebrow">Pre-IPO valuation-off · data as of October 2026</span>
+    <h1>OpenAI vs Anthropic: what are they worth?</h1>
+    <p class="lede">Investors paid <b class="num">$852B</b> for OpenAI and <b class="num">$965B</b> for Anthropic in 2026, and both are now asking for more. This tool rebuilds those companies' futures from my model and lets you change the assumptions to see whether the prices make sense.</p>
+    <div class="steps" aria-label="How a value is built">
+      <div class="step"><b>1 · Four futures</b>Bust, Bear, Base and Bull, each with its own growth and profit path.</div>
+      <div class="step"><b>2 · Cash, year by year</b>Revenue × margin, minus tax and the money needed to keep growing, to 2035.</div>
+      <div class="step"><b>3 · Today's money</b>Later cash counts for less. The discount rate sets how much less.</div>
+      <div class="step"><b>4 · Weigh the futures</b>Multiply each future's value by how likely you think it is, and add them up.</div>
+    </div>
+    <details class="more">
+      <summary>Before you start: what the controls mean</summary>
+      <ul>
+        <li><b>Chances of each future:</b> your judgement. They don't need to add to 100; they are rescaled.</li>
+        <li><b>Base revenue and margin in 2030:</b> how big and how profitable the "likely" future gets. Margin = operating profit ÷ revenue.</li>
+        <li><b>Discount rate:</b> the yearly return an investor wants for waiting. About 10% for big listed tech; pre-IPO shares are hard to sell, so investors add a premium. At 14%, $1 earned in 2035 is worth about 31¢ today; at 10%, about 42¢.</li>
+        <li><b>Long-run growth:</b> how fast revenue grows forever after 2035. It must stay below the discount rate.</li>
+        <li><b>Sales-to-capital:</b> new yearly revenue each $1 of investment buys. Low numbers mean growth is expensive.</li>
+        <li><b>Value ÷ price:</b> above 1× the company looks cheap against this model; below 1× it looks expensive.</li>
+      </ul>
+    </details>
+    <p class="notice">A learning model, not investment advice. Revenue is on a comparable "net" basis (Anthropic's reported figures cut by 10%). Values are for the business; cash in the bank is only added if you switch it on.</p>
+  </header>
+
+  <div class="mini" aria-live="polite"><span>OpenAI <b class="num oa" id="miniOA">–</b></span><span>Anthropic <b class="num an" id="miniAN">–</b></span></div>
+
+  <div class="bench">
+    <form class="panel" id="controls" autocomplete="off">
+      <div class="btns" role="group" aria-label="Starting point">
+        <button type="button" id="presetFixed" aria-pressed="true">My assumptions</button>
+        <button type="button" id="presetBuilt" aria-pressed="false">Notebook as first built</button>
+      </div>
+      <div id="companyCtls"></div>
+      <hr>
+      <fieldset>
+        <legend><h3>Shared assumptions</h3></legend>
+        <div class="ctl"><div class="top"><label for="base">Discount rate, big listed tech</label><output id="baseOut"></output></div>
+          <input type="range" id="base" min="7" max="14" step="0.5"></div>
+        <div class="ctl"><div class="top"><label for="premium">+ Pre-IPO premium</label><output id="premiumOut"></output></div>
+          <input type="range" id="premium" min="0" max="10" step="0.5"></div>
+        <div class="ctl"><div class="top"><label for="growth">Long-run growth after 2035</label><output id="growthOut"></output></div>
+          <input type="range" id="growth" min="1" max="6" step="0.5"><span class="hint" id="growthHint"></span></div>
+        <div class="ctl"><div class="top"><label for="stc">Sales-to-capital</label><output id="stcOut"></output></div>
+          <input type="range" id="stc" min="0.5" max="5" step="0.25"><span class="hint">Rented compute is already in costs, so 1× counts it twice.</span></div>
+        <div class="ctl"><div class="top"><label for="bustMult">Bust sale price (× revenue)</label><output id="bustMultOut"></output></div>
+          <input type="range" id="bustMult" min="0" max="3" step="0.25"></div>
+      </fieldset>
+      <fieldset>
+        <legend><h3>Model switches</h3></legend>
+        <label class="toggle"><input type="checkbox" id="floor"><span>No future below $0</span><span class="hint">Owners can lose what they put in, no more.</span></label>
+        <label class="toggle"><input type="checkbox" id="guidance"><span>Start 2026 margin from company guidance</span><span class="hint">Anthropic: burn ≈ ⅓ of revenue (WSJ). OpenAI: no 2026 figure found, so its path starts from 2025.</span></label>
+        <label class="toggle"><input type="checkbox" id="premiumEnds"><span>Premium ends after the IPO</span><span class="hint">Full premium to 2027, gone by 2030.</span></label>
+        <label class="toggle"><input type="checkbox" id="addCash"><span>Add cash in the bank</span><span class="hint">OpenAI ≥ $87B, Anthropic $115B (Section 3).</span></label>
+      </fieldset>
+    </form>
+
+    <section class="results" aria-live="polite">
+      <p class="verdict" id="verdict"></p>
+      <div class="cards" id="cards"></div>
+      <div class="box">
+        <h2>My value vs the prices</h2>
+        <div class="chart" id="field"></div>
+        <div class="legend">
+          <span><svg width="22" height="10" aria-hidden="true"><rect x="0" y="1" width="22" height="8" rx="2" fill="var(--soft)" stroke="var(--muted)"/></svg>Range of the four futures</span>
+          <span><svg width="12" height="12" aria-hidden="true"><path d="M6 0 L12 6 L6 12 L0 6 Z" fill="var(--ink)"/></svg>Weighted value</span>
+          <span><svg width="14" height="12" aria-hidden="true"><line x1="7" y1="0" x2="7" y2="12" stroke="var(--ink)" stroke-width="2"/></svg>Last round</span>
+          <span><svg width="14" height="12" aria-hidden="true"><line x1="7" y1="0" x2="7" y2="12" stroke="var(--ink)" stroke-width="2" stroke-dasharray="3 2"/></svg>Price sought</span>
+        </div>
+      </div>
+      <div class="box">
+        <h2>Inside each future</h2>
+        <div class="tbl"><table id="detail"></table></div>
+        <p class="split">Hole = cash going in before the business pays for itself, in today's money. Payoff = cash coming out, including the value after 2035.</p>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <p>Built from my notebook <i>AI Valuation-Off</i> (Sections 5–10). Sources are graded A (the company), B (FT, Reuters, Bloomberg, WSJ, CNBC, The Information, Axios, NYT) or C (my own assumption). Revenue start points: 2026 revenue booked so far plus the latest run-rate for the rest of the year. Tax 21%, with past losses offsetting later profit. Valued as of 13 October 2026.</p>
+  </footer>
+</div>
+<script>
+// ---- Model (same logic as the notebook's Sections 6-7, with the 13 Oct fixes as switches) ----
+const SCENARIOS = ["Bust", "Bear", "Base", "Bull"];
+const DATA = {
+  OpenAI: {
+    fy25Rev: 13.10, fy25Margin: -1.597, start2026: 33.41, own2026Margin: null, cash: 87, cashIsFloor: true,
+    prices: { last: { v: 852, label: "Last round (Mar 2026)" }, sought: { v: 1400, label: "In talks (Sep 2026)" } },
+    scen: { Bear: { g27: 0.50, g30: 0.10, m30: -0.05 }, Base: { g27: 1.00, g30: 0.25, m30: 0.15 }, Bull: { g27: 1.40, g30: 0.45, m30: 0.30 } },
+    probs: { Bust: 15, Bear: 30, Base: 35, Bull: 20 },
+  },
+  Anthropic: {
+    fy25Rev: 4.14, fy25Margin: -1.752, start2026: 42.49, own2026Margin: -0.33, cash: 115, cashIsFloor: false,
+    prices: { last: { v: 965, label: "Series H (May 2026)" }, sought: { v: 2000, label: "IPO target, >$2T (Sep 2026)" } },
+    scen: { Bear: { g27: 0.60, g30: 0.10, m30: 0.05 }, Base: { g27: 1.10, g30: 0.25, m30: 0.20 }, Bull: { g27: 1.40, g30: 0.35, m30: 0.35 } },
+    probs: { Bust: 10, Bear: 25, Base: 40, Bull: 25 },
+  },
+};
+const VALUATION_DATE = new Date(Date.UTC(2026, 9, 13));
+const NOW = 2026 + (VALUATION_DATE - Date.UTC(2026, 0, 1)) / 86400000 / 365;
+const TAX = 0.21, IPO_YEAR = 2027, FADE_END = 2030, END = 2035, BUST_YEAR = 2028;
+
+function defaultRev2030(c, s) {
+  const d = DATA[c].scen[s]; let r = DATA[c].start2026;
+  for (let y = 2027; y <= 2030; y++) r *= 1 + d.g27 + (d.g30 - d.g27) * (y - 2027) / 3;
+  return r;
+}
+function rateFor(y, P) {
+  if (!P.premiumEnds) return P.base + P.premium;
+  if (y <= IPO_YEAR) return P.base + P.premium;
+  if (y >= FADE_END) return P.base;
+  return P.base + P.premium * (FADE_END - y) / (FADE_END - IPO_YEAR);
+}
+function forecast(c, s, P) {
+  const D = DATA[c], d = D.scen[s];
+  const m30 = s === "Base" ? P.co[c].baseMargin : d.m30;
+  const target = s === "Base" ? P.co[c].baseRev : defaultRev2030(c, s);
+  const raw = {}; let prod = 1;
+  for (let y = 2027; y <= 2030; y++) { raw[y] = d.g27 + (d.g30 - d.g27) * (y - 2027) / 3; prod *= 1 + raw[y]; }
+  const scale = Math.pow(target / (D.start2026 * prod), 1 / 4);
+  const g = {};
+  for (let y = 2027; y <= 2030; y++) g[y] = (1 + raw[y]) * scale - 1;
+  for (let y = 2031; y <= END; y++) g[y] = g[2030] + (P.growth - g[2030]) * (y - 2030) / (END - 2030);
+  const guided = P.guidance && D.own2026Margin !== null;
+  let prev = D.fy25Rev, losses = 0, df = 1, tPrev = NOW, rev = 0;
+  const rows = [];
+  for (let y = 2026; y <= END; y++) {
+    rev = y === 2026 ? D.start2026 : prev * (1 + g[y]);
+    let m;
+    if (guided) m = y === 2026 ? D.own2026Margin : D.own2026Margin + (m30 - D.own2026Margin) * Math.min(y - 2026, 4) / 4;
+    else m = D.fy25Margin + (m30 - D.fy25Margin) * Math.min(y - 2025, 5) / 5;
+    const op = rev * m;
+    const used = Math.min(losses, Math.max(op, 0));
+    const tax = TAX * (Math.max(op, 0) - used);
+    losses += Math.max(-op, 0) - used;
+    const reinvest = (rev - prev) / P.stc;
+    const fcf = op - tax - reinvest;
+    const start = Math.max(y, NOW), share = Math.min(Math.max(y + 1 - start, 0), 1), mid = (start + y + 1) / 2;
+    df /= Math.pow(1 + rateFor(y, P), mid - tPrev); tPrev = mid;
+    rows.push({ year: y, rev, margin: m, op, tax, reinvest, fcf, df, pv: fcf * share * df });
+    prev = rev;
+  }
+  return rows;
+}
+function valueScenario(c, s, P) {
+  if (s === "Bust") {
+    const bear = forecast(c, "Bear", P), r28 = bear.find(r => r.year === BUST_YEAR);
+    const v = P.bustMult * r28.rev * r28.df;
+    return { value: v, raw: v, explicit: v, terminal: 0, rev2030: null, fcfEnd: null, hole: 0, payoff: v };
+  }
+  const f = forecast(c, s, P), last = f[f.length - 1];
+  const rT = P.premiumEnds ? P.base : P.base + P.premium;
+  const tv = Math.max(last.fcf * (1 + P.growth) / (rT - P.growth), 0) * last.df;
+  const explicit = f.reduce((a, r) => a + r.pv, 0);
+  const raw = explicit + tv;
+  const hole = f.reduce((a, r) => a + Math.min(r.pv, 0), 0);
+  const payoff = f.reduce((a, r) => a + Math.max(r.pv, 0), 0) + tv;
+  return { value: P.floor ? Math.max(raw, 0) : raw, raw, explicit, terminal: tv,
+           rev2030: f.find(r => r.year === 2030).rev, fcfEnd: last.fcf, hole, payoff };
+}
+function valueCompany(c, P) {
+  const w = P.co[c].probs, total = SCENARIOS.reduce((a, s) => a + w[s], 0) || 1;
+  const rows = SCENARIOS.map(s => ({ scenario: s, prob: w[s] / total, ...valueScenario(c, s, P) }));
+  let weighted = rows.reduce((a, r) => a + r.prob * r.value, 0);
+  if (P.addCash) weighted += DATA[c].cash;
+  return { rows, weighted };
+}
+const FIXED = { base: 0.10, premium: 0.04, growth: 0.04, stc: 3, bustMult: 1, floor: true, guidance: true, premiumEnds: true, addCash: false };
+const AS_BUILT = { ...FIXED, stc: 1, floor: false, guidance: false, premiumEnds: false };
+function defaultsFor(preset) {
+  const co = {};
+  for (const c of Object.keys(DATA)) co[c] = { probs: { ...DATA[c].probs }, baseRev: Math.round(defaultRev2030(c, "Base")), baseMargin: DATA[c].scen.Base.m30 };
+  return { ...(preset === "asbuilt" ? AS_BUILT : FIXED), co };
+}
+if (typeof module !== "undefined") module.exports = { valueCompany, defaultsFor, defaultRev2030, forecast };
+// ---- UI ----
+const COS = ["OpenAI", "Anthropic"];
+const CLS = { OpenAI: "oa", Anthropic: "an" };
+let P = defaultsFor("fixed");
+const $ = id => document.getElementById(id);
+const usd = v => (v < 0 ? "−" : "") + "$" + (Math.abs(v) >= 1000 ? (Math.abs(v) / 1000).toFixed(2) + "T" : Math.round(Math.abs(v)) + "B");
+const pct = (v, d = 0) => (v * 100).toFixed(d) + "%";
+
+function companyControls() {
+  $("companyCtls").innerHTML = COS.map(c => {
+    const k = CLS[c];
+    const probs = SCENARIOS.map(s => `
+      <div class="ctl ${k}-ctl"><div class="top"><label for="${k}-p-${s}">${s}</label><output id="${k}-p-${s}-out"></output></div>
+      <input type="range" id="${k}-p-${s}" min="0" max="100" step="5" data-co="${c}" data-prob="${s}"></div>`).join("");
+    return `<fieldset style="margin-bottom:16px">
+      <legend><span class="dot" style="background:var(--${k})"></span><h3>${c}</h3></legend>
+      <div class="group-head"><span class="eyebrow">Chance of each future</span></div>
+      <div class="probs">${probs}</div>
+      <div class="ctl ${k}-ctl"><div class="top"><label for="${k}-rev">Base: revenue in 2030</label><output id="${k}-rev-out"></output></div>
+        <input type="range" id="${k}-rev" min="80" max="700" step="1" data-co="${c}" data-field="baseRev">
+        <span class="hint">Today's run-rate ≈ ${c === "OpenAI" ? "$40B" : "$59B (net)"}; Microsoft ≈ $332B a year.</span></div>
+      <div class="ctl ${k}-ctl"><div class="top"><label for="${k}-m">Base: operating margin in 2030</label><output id="${k}-m-out"></output></div>
+        <input type="range" id="${k}-m" min="0" max="45" step="1" data-co="${c}" data-field="baseMargin"></div>
+    </fieldset>`;
+  }).join("");
+}
+
+function syncInputs() {
+  for (const c of COS) {
+    const k = CLS[c];
+    for (const s of SCENARIOS) $(`${k}-p-${s}`).value = P.co[c].probs[s];
+    $(`${k}-rev`).value = P.co[c].baseRev;
+    $(`${k}-m`).value = Math.round(P.co[c].baseMargin * 100);
+  }
+  $("base").value = P.base * 100; $("premium").value = P.premium * 100; $("growth").value = P.growth * 100;
+  $("stc").value = P.stc; $("bustMult").value = P.bustMult;
+  for (const id of ["floor", "guidance", "premiumEnds", "addCash"]) $(id).checked = P[id];
+}
+
+function readInputs(e) {
+  const t = e && e.target;
+  if (t && t.dataset.prob) P.co[t.dataset.co].probs[t.dataset.prob] = +t.value;
+  else if (t && t.dataset.field === "baseRev") P.co[t.dataset.co].baseRev = +t.value;
+  else if (t && t.dataset.field === "baseMargin") P.co[t.dataset.co].baseMargin = +t.value / 100;
+  for (const id of ["floor", "guidance", "premiumEnds", "addCash"]) P[id] = $(id).checked;
+  P.base = +$("base").value / 100; P.premium = +$("premium").value / 100;
+  P.stc = +$("stc").value; P.bustMult = +$("bustMult").value;
+  const rT = P.premiumEnds ? P.base : P.base + P.premium;
+  P.growth = Math.min(+$("growth").value / 100, rT - 0.01);
+  setPreset(null);
+  render();
+}
+
+function setPreset(which) {
+  $("presetFixed").setAttribute("aria-pressed", which === "fixed");
+  $("presetBuilt").setAttribute("aria-pressed", which === "asbuilt");
+}
+
+function labels(res) {
+  for (const c of COS) {
+    const k = CLS[c], w = P.co[c].probs, tot = SCENARIOS.reduce((a, s) => a + w[s], 0) || 1;
+    for (const s of SCENARIOS) $(`${k}-p-${s}-out`).textContent = pct(w[s] / tot);
+    $(`${k}-rev-out`).textContent = usd(P.co[c].baseRev);
+    $(`${k}-m-out`).textContent = pct(P.co[c].baseMargin);
+  }
+  $("baseOut").textContent = pct(P.base, 1);
+  $("premiumOut").textContent = "+" + pct(P.premium, 1);
+  $("growthOut").textContent = pct(P.growth, 1);
+  const rT = P.premiumEnds ? P.base : P.base + P.premium;
+  $("growthHint").textContent = `Capped at ${pct(rT - 0.01, 1)}: one point below the long-run discount rate (${pct(rT, 1)}).`;
+  $("stcOut").textContent = P.stc.toFixed(2) + "×";
+  $("bustMultOut").textContent = P.bustMult.toFixed(2) + "×";
+}
+
+function ratioRow(label, price, value) {
+  const r = value / price, w = Math.max(0, Math.min(r / 2, 1)) * 100;
+  const tone = r >= 1 ? "cheap" : "dear";
+  return `<div class="ratio"><span>${label} <span class="muted num">${usd(price)}</span></span>
+    <span class="pill ${tone}">${r.toFixed(2)}×</span>
+    <div class="bar" aria-hidden="true"><span style="width:${w}%;background:var(--${r >= 1 ? "good" : "bad"})"></span><i></i></div></div>`;
+}
+
+function cards(res) {
+  $("cards").innerHTML = COS.map(c => {
+    const k = CLS[c], v = res[c].weighted, pr = DATA[c].prices;
+    const base = res[c].rows.find(r => r.scenario === "Base");
+    return `<article class="card">
+      <div class="group-head"><span class="name ${k}">${c}</span><span class="eyebrow">Weighted value</span></div>
+      <div class="big ${v < 0 ? "neg" : ""}">${usd(v)}</div>
+      <div class="ratios">${ratioRow(pr.last.label, pr.last.v, v)}${ratioRow(pr.sought.label, pr.sought.v, v)}</div>
+      <p class="split">Base future: hole <span class="num">${usd(base.hole)}</span>, payoff <span class="num">${usd(base.payoff)}</span>${P.floor && base.raw < 0 ? " (counted as $0)" : ""}.</p>
+    </article>`;
+  }).join("");
+  $("miniOA").textContent = usd(res.OpenAI.weighted);
+  $("miniAN").textContent = usd(res.Anthropic.weighted);
+}
+
+function verdict(res) {
+  const r = {}; for (const c of COS) r[c] = res[c].weighted / DATA[c].prices.last.v;
+  const [win, lose] = r.Anthropic >= r.OpenAI ? ["Anthropic", "OpenAI"] : ["OpenAI", "Anthropic"];
+  const above = COS.filter(c => DATA[c].prices.sought.v > Math.max(...res[c].rows.map(x => x.value)));
+  let s = `On these settings <b class="${CLS[win]}">${win}</b> looks cheaper: my value is <b class="num">${r[win].toFixed(2)}×</b> its last round, against <b class="num">${r[lose].toFixed(2)}×</b> for ${lose}.`;
+  if (r[win] >= 1) s += ` ${win}'s last round looks cheap against this model.`;
+  if (above.length) s += ` ${above.length === 2 ? "Both prices sought are" : above[0] + "'s price sought is"} above even the Bull future.`;
+  $("verdict").innerHTML = s;
+}
+
+function field(res) {
+  const W = 720, rowH = 92, top = 26, left = 92, right = 24, H = top + rowH * COS.length + 30;
+  const all = COS.flatMap(c => [...res[c].rows.map(r => r.value), res[c].weighted, DATA[c].prices.last.v, DATA[c].prices.sought.v]);
+  const lo = Math.min(0, ...all), hi = Math.max(...all) * 1.06;
+  const step = hi - lo > 2500 ? 1000 : hi - lo > 1000 ? 500 : 250;
+  const x = v => left + (v - lo) / (hi - lo) * (W - left - right);
+  let g = "";
+  for (let t = Math.ceil(lo / step) * step; t <= hi; t += step) {
+    g += `<line x1="${x(t)}" x2="${x(t)}" y1="${top - 6}" y2="${H - 26}" stroke="var(--line)" stroke-width="1"/>
+          <text x="${x(t)}" y="${H - 10}" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${usd(t)}</text>`;
+  }
+  COS.forEach((c, i) => {
+    const k = CLS[c], cy = top + rowH * i + rowH / 2 - 6, vals = res[c].rows.map(r => r.value);
+    const mn = Math.min(...vals), mx = Math.max(...vals);
+    g += `<text x="0" y="${cy + 5}" font-size="14" font-weight="600" fill="var(--${k})" font-family="var(--f-body)">${c}</text>`;
+    g += `<rect x="${x(mn)}" y="${cy - 11}" width="${Math.max(x(mx) - x(mn), 2)}" height="22" rx="3" fill="var(--${k})" fill-opacity="0.16" stroke="var(--${k})" stroke-width="1"/>`;
+    res[c].rows.forEach(r => { g += `<line x1="${x(r.value)}" x2="${x(r.value)}" y1="${cy - 11}" y2="${cy + 11}" stroke="var(--${k})" stroke-width="1.2"/>`; });
+    const pr = DATA[c].prices;
+    [["last", ""], ["sought", "4 3"]].forEach(([key, dash], j) => {
+      const px = x(pr[key].v);
+      g += `<line x1="${px}" x2="${px}" y1="${cy - 22}" y2="${cy + 22}" stroke="var(--ink)" stroke-width="2" ${dash ? `stroke-dasharray="${dash}"` : ""}/>`;
+      g += `<text x="${px}" y="${cy + 36}" text-anchor="${px > W - 80 ? "end" : "middle"}" font-size="11" fill="var(--muted)" font-family="var(--f-mono)">${usd(pr[key].v)}</text>`;
+    });
+    const wx = x(res[c].weighted);
+    g += `<path d="M${wx} ${cy - 8} L${wx + 8} ${cy} L${wx} ${cy + 8} L${wx - 8} ${cy} Z" fill="var(--${k})" stroke="var(--ink)" stroke-width="1.2"/>`;
+    g += `<text x="${wx}" y="${cy - 16}" text-anchor="${wx > W - 80 ? "end" : wx < left + 40 ? "start" : "middle"}" font-size="12" font-weight="600" fill="var(--ink)" font-family="var(--f-mono)">${usd(res[c].weighted)}</text>`;
+  });
+  if (lo < 0) g += `<line x1="${x(0)}" x2="${x(0)}" y1="${top - 6}" y2="${H - 26}" stroke="var(--muted)" stroke-width="1.2"/>`;
+  $("field").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Range of my values and the market prices for each company">${g}</svg>`;
+}
+
+function detail(res) {
+  let h = `<thead><tr><th>Company</th><th>Future</th><th>Chance</th><th>Revenue 2030</th><th>Cash 2035</th><th>Hole</th><th>Payoff</th><th>Value today</th></tr></thead><tbody>`;
+  COS.forEach((c, i) => res[c].rows.forEach((r, j) => {
+    const v = r.value, raw = r.raw;
+    h += `<tr class="${i && !j ? "sep" : ""}"><td>${j ? "" : `<b class="${CLS[c]}">${c}</b>`}</td><td>${r.scenario}</td>
+      <td class="num">${pct(r.prob)}</td>
+      <td class="num">${r.rev2030 == null ? "sold 2028" : usd(r.rev2030)}</td>
+      <td class="num ${r.fcfEnd < 0 ? "neg" : ""}">${r.fcfEnd == null ? "–" : usd(r.fcfEnd)}</td>
+      <td class="num ${r.hole < 0 ? "neg" : ""}">${r.scenario === "Bust" ? "–" : usd(r.hole)}</td>
+      <td class="num">${usd(r.payoff)}</td>
+      <td class="num ${v < 0 ? "neg" : ""}"><b>${usd(v)}</b>${P.floor && raw < 0 ? ` <span class="muted">(${usd(raw)})</span>` : ""}</td></tr>`;
+  }));
+  $("detail").innerHTML = h + "</tbody>";
+}
+
+function render() {
+  const res = {}; for (const c of COS) res[c] = valueCompany(c, P);
+  labels(res); cards(res); verdict(res); field(res); detail(res);
+}
+
+companyControls();
+syncInputs();
+$("controls").addEventListener("input", readInputs);
+$("controls").addEventListener("change", readInputs);
+$("controls").addEventListener("submit", e => e.preventDefault());
+$("presetFixed").addEventListener("click", () => { P = defaultsFor("fixed"); syncInputs(); render(); setPreset("fixed"); });
+$("presetBuilt").addEventListener("click", () => { P = defaultsFor("asbuilt"); syncInputs(); render(); setPreset("asbuilt"); });
+render(); setPreset("fixed");
+</script>
+
+</body></html>
